@@ -5,7 +5,7 @@
 [![Go Report](https://goreportcard.com/badge/github.com/huandu/go-magicstring)](https://goreportcard.com/report/github.com/huandu/go-magicstring)
 [![Coverage Status](https://coveralls.io/repos/github/huandu/go-magicstring/badge.svg?branch=master)](https://coveralls.io/github/huandu/go-magicstring?branch=master)
 
-This `magicstring` package is to attach any arbitrary data into Go built-in `string` type transparently. The string with arbitrary data is so-called "magic string" here. Such string can be used as an ordinary string. We can read the attached data from a magic string freely.
+This `magicstring` package is designed to attach arbitrary data to a Go built-in `string` type. The string with arbitrary data is called "magic string" here. Such string can be used as an ordinary string. We can read the attached data from a magic string freely.
 
 ## Usage
 

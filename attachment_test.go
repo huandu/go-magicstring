@@ -5,7 +5,9 @@ package magicstring
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
+	"unsafe"
 
 	"github.com/huandu/go-assert"
 )
@@ -13,7 +15,7 @@ import (
 func TestAttachData(t *testing.T) {
 	a := assert.New(t)
 	cases := []interface{}{
-		1, "abcd", true, nil, 1.2, complex(1, 2),
+		1, "abcd", true, 1.2, complex(1, 2),
 		struct{}{}, []byte("123"), &testStruct{},
 		map[string][]int{"foo": {1, 2, 3}},
 	}
@@ -28,6 +30,30 @@ func TestAttachData(t *testing.T) {
 			a.Equal(data, c)
 		})
 	}
+}
+
+func TestAttachNilData(t *testing.T) {
+	a := assert.New(t)
+	s1 := "nil data"
+	s2 := Attach(s1, nil)
+	s3 := Attach(s1, 123)
+	s4 := Attach(s3, nil)
+	a.Equal(s1, s2)
+	a.Equal(s1, s3)
+	a.Equal(s1, s4)
+
+	// There is no magic attached to s2.
+	a.Assert(!Is(s2))
+
+	// The buffer in s1 and s2 must be identical.
+	data1 := (*reflect.StringHeader)(unsafe.Pointer(&s1)).Data
+	data2 := (*reflect.StringHeader)(unsafe.Pointer(&s2)).Data
+	a.Equal(data1, data2)
+
+	// The buffer in s3 and s4 must be different.
+	data3 := (*reflect.StringHeader)(unsafe.Pointer(&s3)).Data
+	data4 := (*reflect.StringHeader)(unsafe.Pointer(&s4)).Data
+	a.NotEqual(data3, data4)
 }
 
 func TestReadInvalidString(t *testing.T) {

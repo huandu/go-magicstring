@@ -9,9 +9,15 @@ import (
 	"unsafe"
 )
 
-// Attach associates the data with a newly allocated string.
+// Attach associates a newly allocated string with data.
 // The value of the returned string is guaranteed to be identical to str.
+//
+// Calling `Attach(str, nil)` is equivalent to `Detach(str)`.
 func Attach(str string, data interface{}) string {
+	if data == nil {
+		return Detach(str)
+	}
+
 	sz := len(str)
 
 	if sz == 0 {

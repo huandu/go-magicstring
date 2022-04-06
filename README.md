@@ -11,7 +11,7 @@ This `magicstring` package is designed to attach arbitrary data to a Go built-in
 
 ### Attach data and then read it
 
-Call `Attach` to attach data into a string and `Read` to read the attached data in the magic string.
+Call `Attach` to attach data to a string and `Read` to read the attached data in the magic string.
 
 ```go
 type T struct {

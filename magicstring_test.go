@@ -88,6 +88,34 @@ func BenchmarkAttachLarge1MBString(b *testing.B) {
 	}
 }
 
+func BenchmarkReplaceSmallString(b *testing.B) {
+	s := "small"
+	var data interface{} = map[string]int{
+		"foo": 123,
+		"bar": 345,
+	}
+	attached := Attach(s, nil)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		Replace(attached, data)
+	}
+}
+
+func BenchmarkReplaceLarge1MBString(b *testing.B) {
+	s := makeString(1 * 1024 * 1024)
+	var data interface{} = map[string]int{
+		"foo": 123,
+		"bar": 345,
+	}
+	attached := Attach(s, nil)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		Replace(attached, data)
+	}
+}
+
 func BenchmarkReadSmallString(b *testing.B) {
 	s1 := "small"
 	data := map[string]int{

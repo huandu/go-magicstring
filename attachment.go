@@ -14,10 +14,6 @@ import (
 //
 // Calling `Attach(str, nil)` is equivalent to `Detach(str)`.
 func Attach(str string, data interface{}) string {
-	if data == nil {
-		return Detach(str)
-	}
-
 	sz := len(str)
 
 	if sz == 0 {
@@ -61,11 +57,29 @@ func attachLargeString(str string, data interface{}) string {
 	payload.data = data
 	copy(dst, str)
 
-	runtime.SetFinalizer(payload, func(payload *magicStringPayload) {
-		// Hold data in this finalizer and clear it after finalized.
-		data = nil
-	})
+	if data != nil {
+		runtime.SetFinalizer(payload, func(payload *magicStringPayload) {
+			// Hold data in this finalizer and clear it after finalized.
+			data = nil
+		})
+	}
+
 	return *(*string)(unsafe.Pointer(&dst))
+}
+
+// Replace replaces the attached data in str if str is a magic string.
+// If str is an ordinary string, Replace creates a magic string with data.
+//
+// Replace returns true if the data is replaced, false if not.
+func Replace(str string, data interface{}) bool {
+	payload := read(str)
+
+	if payload == nil {
+		return false
+	}
+
+	payload.data = data
+	return true
 }
 
 // Read reads the attached data inside the str.
@@ -112,12 +126,14 @@ func read(str string) (payload *magicStringPayload) {
 // Detach returns a new string without any attached data.
 // If str is an ordinary string, Detach just simply returns str.
 func Detach(str string) string {
-	if !Is(str) {
-		return str
-	}
-
 	if len(str) == 0 {
 		return ""
+	}
+
+	payload := read(str)
+
+	if payload == nil {
+		return str
 	}
 
 	dst := make([]byte, len(str))

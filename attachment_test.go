@@ -42,13 +42,13 @@ func TestAttachNilData(t *testing.T) {
 	a.Equal(s1, s3)
 	a.Equal(s1, s4)
 
-	// There is no magic attached to s2.
-	a.Assert(!Is(s2))
+	// Nil data is a kind of data.
+	a.Assert(Is(s2))
 
-	// The buffer in s1 and s2 must be identical.
+	// The buffer in s1 and s2 must be different.
 	data1 := (*reflect.StringHeader)(unsafe.Pointer(&s1)).Data
 	data2 := (*reflect.StringHeader)(unsafe.Pointer(&s2)).Data
-	a.Equal(data1, data2)
+	a.NotEqual(data1, data2)
 
 	// The buffer in s3 and s4 must be different.
 	data3 := (*reflect.StringHeader)(unsafe.Pointer(&s3)).Data
@@ -116,6 +116,29 @@ func TestAttachMapKey(t *testing.T) {
 	}
 }
 
+func TestReplace(t *testing.T) {
+	a := assert.New(t)
+	data1 := 123
+	data2 := "foo"
+
+	iterateStrings(func(s string) {
+		success := Replace(s, data1)
+		a.Assert(!success)
+
+		attached := Attach(s, data1)
+		a.Assert(Is(attached))
+		a.Equal(Read(attached), data1)
+
+		success = Replace(attached, nil)
+		a.Assert(success)
+		a.Equal(Read(attached), nil)
+
+		success = Replace(attached, data2)
+		a.Assert(success)
+		a.Equal(Read(attached), data2)
+	})
+}
+
 func TestDetach(t *testing.T) {
 	a := assert.New(t)
 
@@ -129,17 +152,13 @@ func TestDetach(t *testing.T) {
 		// Call detach will not affect attached string.
 		detached := Detach(attached)
 		a.Equal(detached, s)
-		payload := Read(attached)
-		a.Equal(data, payload)
-
-		// Attached data is nil in detached string.
-		payload = Read(detached)
-		a.Assert(payload == nil)
+		a.Assert(Is(attached))
+		a.Assert(!Is(detached))
 
 		// It's OK to detach twice.
 		detached = Detach(detached)
 		a.Equal(detached, s)
-		payload = Read(detached)
+		payload := Read(detached)
 		a.Assert(payload == nil)
 	})
 }
@@ -177,4 +196,35 @@ func ExampleIs() {
 	// true
 	// true
 	// false
+}
+
+func Example_destroyMagicString() {
+	magicString := Attach("magic string", 123)
+	buf := make([]byte, len(magicString))
+	copy(buf, magicString)
+	ordinaryString := string(buf)
+	detachedString := Detach(magicString)
+
+	fmt.Println(Is(magicString))
+	fmt.Println(Is(ordinaryString))
+	fmt.Println(Is(detachedString))
+
+	// Output:
+	// true
+	// false
+	// false
+}
+
+func ExampleReplace() {
+	s := Attach("magic string", 123)
+	fmt.Println(Read(s))
+
+	success := Replace(s, "replaced")
+	fmt.Println(success)
+	fmt.Println(Read(s))
+
+	// Output:
+	// 123
+	// true
+	// replaced
 }

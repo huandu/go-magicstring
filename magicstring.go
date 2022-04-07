@@ -1,10 +1,9 @@
 // Copyright 2022 Huan Du. All rights reserved.
 // Licensed under the MIT license that can be found in the LICENSE file.
 
-// This `magicstring` package is designed to attach arbitrary data to a Go built-in `string` type.
-// The string with arbitrary data is called "magic string" here.
-// Such string can be used as an ordinary string.
-// We can read the attached data from a magic string freely.
+// This `magicstring` package is designed to attach arbitrary data to a Go built-in `string` type
+// and read the data later.
+// The string with attached data is called "magic string" here.
 package magicstring
 
 import (

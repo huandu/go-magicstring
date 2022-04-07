@@ -87,3 +87,31 @@ func BenchmarkAttachLarge1MBString(b *testing.B) {
 		Attach(s, data)
 	}
 }
+
+func BenchmarkReadSmallString(b *testing.B) {
+	s1 := "small"
+	data := map[string]int{
+		"foo": 123,
+		"bar": 345,
+	}
+	s2 := Attach(s1, data)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		Read(s2)
+	}
+}
+
+func BenchmarkReadLarge1MBString(b *testing.B) {
+	s1 := makeString(1 * 1024 * 1024)
+	data := map[string]int{
+		"foo": 123,
+		"bar": 345,
+	}
+	s2 := Attach(s1, data)
+	b.ResetTimer()
+
+	for i := 0; i < b.N; i++ {
+		Read(s2)
+	}
+}

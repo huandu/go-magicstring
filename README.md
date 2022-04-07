@@ -5,13 +5,13 @@
 [![Go Report](https://goreportcard.com/badge/github.com/huandu/go-magicstring)](https://goreportcard.com/report/github.com/huandu/go-magicstring)
 [![Coverage Status](https://coveralls.io/repos/github/huandu/go-magicstring/badge.svg?branch=main)](https://coveralls.io/github/huandu/go-magicstring?branch=main)
 
-This `magicstring` package is designed to attach arbitrary data to a Go built-in `string` type. The string with arbitrary data is called "magic string" here. Such string can be used as an ordinary string. We can read the attached data from a magic string freely.
+This `magicstring` package is designed to attach arbitrary data to a Go built-in `string` type and read the data later. The string with attached data is called "magic string" here.
 
 ## Usage
 
 ### Attach data and then read it
 
-Call `Attach` to attach data to a string and `Read` to read the attached data in the magic string.
+Call `Attach` to attach data to a string and `Read` to read the attached data in the magic string. `Read` is thread-safe and extremely fast.
 
 ```go
 type T struct {
@@ -51,7 +51,7 @@ The simplest way to create an ordinary string from a magic string is to call `De
 
 ## Performance
 
-Memory allocation is highly optimized for small strings. The maximum size of a small string is 18,408 bytes right now. It's the maximum memory span size, which is 18,432 bytes provided by `runtime.ReadMemStats()`, minus the size of magic string payload struct, which is 24 bytes right now.
+Memory allocation is highly optimized for small strings. The maximum size of a small string is 18,408 bytes right now. It's the maximum size of memory span classes, which is 18,432 bytes provided by `runtime.ReadMemStats()`, minus the size of magic string payload struct, which is 24 bytes right now.
 
 Here is the performance data running on my MacBook.
 
@@ -60,8 +60,10 @@ goos: darwin
 goarch: amd64
 pkg: github.com/huandu/go-magicstring
 cpu: Intel(R) Core(TM) i7-9750H CPU @ 2.60GHz
-BenchmarkAttachSmallString-12        13208282         82.08 ns/op       32 B/op        1 allocs/op
-BenchmarkAttachLarge1MBString-12         7812        149331 ns/op  1057068 B/op        3 allocs/op
+BenchmarkAttachSmallString-12        12947604         84.88 ns/op       32 B/op        1 allocs/op
+BenchmarkAttachLarge1MBString-12         8617        147745 ns/op  1057043 B/op        3 allocs/op
+BenchmarkReadSmallString-12          302741469        3.977 ns/op        0 B/op        0 allocs/op
+BenchmarkReadLarge1MBString-12       305921304        3.908 ns/op        0 B/op        0 allocs/op
 ```
 
 ## License

@@ -9,10 +9,10 @@ import (
 	"unsafe"
 )
 
+const pointerMask uintptr = unsafe.Sizeof(uintptr(0)) - 1
+
 // Attach associates a newly allocated string with data.
 // The value of the returned string is guaranteed to be identical to str.
-//
-// Calling `Attach(str, nil)` is equivalent to `Detach(str)`.
 func Attach(str string, data interface{}) string {
 	sz := len(str)
 
@@ -101,7 +101,7 @@ func Is(str string) bool {
 }
 
 func read(str string) (payload *magicStringPayload) {
-	data := unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&str)).Data)
+	data := unsafe.Pointer(uintptr(unsafe.Pointer((*reflect.StringHeader)(unsafe.Pointer(&str)).Data)) &^ pointerMask)
 
 	if data == nil {
 		return
@@ -139,4 +139,22 @@ func Detach(str string) string {
 	dst := make([]byte, len(str))
 	copy(dst, str)
 	return *(*string)(unsafe.Pointer(&dst))
+}
+
+// Slice returns a result of str[begin:end].
+// If str is a magic string with attachment, the returned string references the same attachment of str.
+func Slice(str string, begin, end int) (sliced string) {
+	if begin > end {
+		panic("go-magicstring: begin must not be greater than end in Slice")
+	}
+
+	payload := read(str)
+	sliced = str[begin:end]
+
+	if payload == nil {
+		return
+	}
+
+	sliced = Attach(sliced, payload.data)
+	return
 }

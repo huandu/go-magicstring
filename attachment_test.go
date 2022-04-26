@@ -163,6 +163,54 @@ func TestDetach(t *testing.T) {
 	})
 }
 
+func TestSlice(t *testing.T) {
+	a := assert.New(t)
+	type T struct {
+		Foo string
+		Bar int
+	}
+	data := &T{
+		Foo: "foo",
+		Bar: 123,
+	}
+	s0 := "a plain string"
+	s1 := Attach("a magic string which should be long enough for test", data)
+	s2 := Slice(s1, 15, 22)
+	s3 := s1[3:20]
+	s4 := s1[21:27]
+	s5 := Slice(s0, 3, 6)
+	s6 := Slice(s1, 21, 21)
+
+	// Magic strings.
+	a.Assert(Is(s1))
+	a.Assert(Is(s2))
+	a.Assert(Is(s3))
+	a.Assert(Is(s6))
+
+	// All magic strings reference to the same data by pointer.
+	a.Equal(Read(s1), data)
+	a.Equal(Read(s2), data)
+	a.Equal(Read(s3), data)
+	a.Equal(Read(s6), data)
+	data.Bar = 999
+	a.Equal(Read(s1), data)
+	a.Equal(Read(s2), data)
+	a.Equal(Read(s3), data)
+	a.Equal(Read(s6), data)
+
+	// Ordinary strings.
+	a.Assert(!Is(s0))
+	a.Assert(!Is(s4))
+	a.Assert(!Is(s5))
+
+	func() {
+		defer func() {
+			a.Assert(recover())
+		}()
+		Slice(s1, 13, 12)
+	}()
+}
+
 func ExampleAttach() {
 	type T struct {
 		Name string

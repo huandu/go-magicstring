@@ -72,6 +72,10 @@ fmt.Println(Is(s2)) // false
 
 The simplest way to create an ordinary string from a magic string is to call `Detach`. This function is optimized for ordinary strings. If a string is not a magic string, the `Detach` simply returns the string to avoid an unnecessary memory allocation and memory copy.
 
+### Slice a magic string
+
+A magic string cannot be sliced by built-in slice expression. If we want to keep the attachment in a magic string, we must call `Slice` to slice it. If a string is not a magic string, `Slice` just works the same as slice expression.
+
 ## Performance
 
 Memory allocation is highly optimized for small strings. The maximum size of a small string is 18,408 bytes right now. It's the maximum size of memory span classes, which is 18,432 bytes provided by `runtime.ReadMemStats()`, minus the size of magic string payload struct, which is 24 bytes right now.
